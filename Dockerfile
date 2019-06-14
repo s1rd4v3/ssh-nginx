@@ -1,9 +1,14 @@
 FROM nginx
 
-RUN apt-get update && apt-get install -y openssh-server vim
+# Install main dependencies
+RUN apt-get update && apt-get install apt-utils sudo gnupg2 sshpass openssh-server rsync vim -y
 RUN mkdir /var/run/sshd
-RUN echo 'root:$ChangeMe' | chpasswd
-RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+# Adding SSH web user
+RUN adduser web --home /usr/share/nginx --disabled-password --gecos "Web User"
+RUN chown web:web -R /usr/share/nginx
+RUN echo web:ChangeMe$ | chpasswd
+
 
 # SSH login fix. Otherwise user is kicked off after login
 RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
